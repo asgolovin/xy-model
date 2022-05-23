@@ -1,6 +1,5 @@
-include("../data/lattice.jl")
-
-using Params
+using InputParams
+using Lattices
 
 using Parameters
 using GLMakie

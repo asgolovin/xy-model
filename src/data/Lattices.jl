@@ -1,3 +1,7 @@
+module Lattices
+
+export Lattice, fill_random!, fill_zero!, get_ΔE
+
 """
     Lattice(nrow, ncol)
 
@@ -82,4 +86,6 @@ end
 
 function add!(lattice::Lattice, i::Integer, j::Integer, dtheta::Number)
     set!(lattice, i, j, lattice.theta[i, j] + dtheta)
+end
+
 end
