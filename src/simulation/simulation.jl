@@ -2,7 +2,7 @@ include("../data/params.jl")
 include("../data/lattice.jl")
 
 using Parameters
-
+using GLMakie
 @with_kw mutable struct SimulationData
     lattice::Lattice
     params::Params
@@ -19,17 +19,26 @@ function start_simulation(params::Params, consts::Consts)
     lattice = Lattice(params.nrow, params.ncol)
     fill_random!(lattice)
 
+    obs_theta = Observable(lattice.theta)
+
+    fig = Figure(); display(fig)
+    ax = Axis(fig[1, 1])
+
     simdata = SimulationData(lattice, params, consts, 0)
 
     for t = 1:params.burnin_timesteps
         update!(simdata)
-        #println(lattice.theta)
+        if t % 10000 == 0
+            GLMakie.heatmap!(obs_theta, colormap = :romaO)
+        end
     end
 
     for t = params.burnin_timesteps:params.max_timesteps
         update!(simdata)
+        if t % 10000 == 0
+            GLMakie.heatmap!(obs_theta, colormap = :romaO)
+        end
     end
-
 end
 
 """
@@ -40,7 +49,7 @@ Move forward one timestep in the simulation.
 function update!(simdata::SimulationData)
     isaccepted = metropolis!(simdata)
     simdata.timestep += 1
-    simdata.timestep % 100000 == 0 && println(simdata.timestep)
+    simdata.timestep % 10000 == 0 && println(simdata.timestep)
 end
 
 """
