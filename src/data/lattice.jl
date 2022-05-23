@@ -46,7 +46,7 @@ function get_spin_energy(lattice::Lattice, i::Integer, j::Integer)
     return get_spin_energy(lattice, i, j, lattice.theta[i, j])
 end
 
-function get_spin_energy(lattice::Lattice, i::Integer, j::Integer, theta::Float64)
+function get_spin_energy(lattice::Lattice, i::Integer, j::Integer, theta::Number)
     energy = 0.
     ncol = lattice.ncol
     nrow = lattice.nrow
@@ -58,7 +58,7 @@ function get_spin_energy(lattice::Lattice, i::Integer, j::Integer, theta::Float6
     return energy
 end
 
-function get_ΔE(lattice::Lattice, i::Integer, j::Integer, new_theta::Float64)
+function get_ΔE(lattice::Lattice, i::Integer, j::Integer, new_theta::Number)
     old_spin_energy = get_spin_energy(lattice, i, j)
     new_spin_energy = get_spin_energy(lattice, i, j, new_theta)
     return 2 * (new_spin_energy - old_spin_energy)
