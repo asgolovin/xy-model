@@ -1,22 +1,27 @@
+module Simulation
+export start_simulation
+
 using InputParams
 using Lattices
 
 using Parameters
 using GLMakie
+
+
 @with_kw mutable struct SimulationData
     lattice::Lattice
-    params::Params
+    sparams::SimulationParams
     consts::Consts
     timestep::Integer = 0
 end
 
 """
-    start(params::Params, consts::Consts)
+    start_simulation(params::Params, consts::Consts)
 
-The function executing the simulation. 
+The function executing the simulation.
 """
-function start_simulation(params::Params, consts::Consts)
-    lattice = Lattice(params.nrow, params.ncol)
+function start_simulation(lp::LatticeParams, sp::SimulationParams, consts::Consts)
+    lattice = Lattice(lp)
     fill_random!(lattice)
 
     obs_theta = Observable(lattice.theta)
@@ -24,18 +29,18 @@ function start_simulation(params::Params, consts::Consts)
     fig = Figure(); display(fig)
     ax = Axis(fig[1, 1])
 
-    simdata = SimulationData(lattice, params, consts, 0)
+    simdata = SimulationData(lattice, sp, consts, 0)
 
-    for t = 1:params.burnin_timesteps
+    for t = 1:sp.burnin_timesteps
         update!(simdata)
-        if t % 10000 == 0
+        if simdata.timestep % sp.vis_timesteps == 0
             GLMakie.heatmap!(obs_theta, colormap = :romaO)
         end
     end
 
-    for t = params.burnin_timesteps:params.max_timesteps
+    for t = sp.burnin_timesteps:sp.max_timesteps
         update!(simdata)
-        if t % 10000 == 0
+        if simdata.timestep % sp.vis_timesteps == 0
             GLMakie.heatmap!(obs_theta, colormap = :romaO)
         end
     end
@@ -49,7 +54,7 @@ Move forward one timestep in the simulation.
 function update!(simdata::SimulationData)
     isaccepted = metropolis!(simdata)
     simdata.timestep += 1
-    simdata.timestep % 10000 == 0 && println(simdata.timestep)
+    simdata.timestep % simdata.sparams.print_timesteps == 0 && println(simdata.timestep)
 end
 
 """
@@ -62,7 +67,7 @@ Returns true if the new configuration has been accepted, false otherwise.
 """
 function metropolis!(simdata::SimulationData)
     lattice = simdata.lattice
-    params = simdata.params
+    params = lattice.params
     consts = simdata.consts
 
     i = rand(1:lattice.nrow)
@@ -77,4 +82,6 @@ function metropolis!(simdata::SimulationData)
         # reject
         return false
     end
+end
+
 end
