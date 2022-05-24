@@ -3,9 +3,9 @@ export start_simulation
 
 using InputParams
 using Lattices
+using Visualization
 
 using Parameters
-using GLMakie
 
 
 @with_kw mutable struct SimulationData
@@ -24,24 +24,13 @@ function start_simulation(lp::LatticeParams, sp::SimulationParams, consts::Const
     lattice = Lattice(lp)
     fill_random!(lattice)
 
-    obs_theta = Observable(lattice.theta)
-
-    fig = Figure(); display(fig)
-    ax = Axis(fig[1, 1])
-
+    vis_obs = create_visualization(lattice.theta)
     simdata = SimulationData(lattice, sp, consts, 0)
 
-    for t = 1:sp.burnin_timesteps
+    for t = 1:sp.max_timesteps
         update!(simdata)
         if simdata.timestep % sp.vis_timesteps == 0
-            GLMakie.heatmap!(obs_theta, colormap = :romaO)
-        end
-    end
-
-    for t = sp.burnin_timesteps:sp.max_timesteps
-        update!(simdata)
-        if simdata.timestep % sp.vis_timesteps == 0
-            GLMakie.heatmap!(obs_theta, colormap = :romaO)
+            draw(vis_obs)
         end
     end
 end
