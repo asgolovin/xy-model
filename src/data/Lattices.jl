@@ -23,11 +23,14 @@ mutable struct Lattice
     theta::Array{AbstractFloat, 2}
     energy::AbstractFloat
     function Lattice(params::LatticeParams)
-        new(params, params.nrow, params.ncol, Array{AbstractFloat, 2}(undef, params.nrow, params.ncol), 0.)
+        new(params,
+            params.nrow,
+            params.ncol,
+            Array{AbstractFloat, 2}(undef, params.nrow, params.ncol),
+            0.
+        )
     end
 end
-
-
 
 function get_energy(lattice::Lattice)
     energy = 0.
@@ -63,6 +66,34 @@ function get_ΔE(lattice::Lattice, i::Integer, j::Integer, new_theta::Number)
     return 2 * (new_spin_energy - old_spin_energy)
 end
 
+function update_div!(lattice::Lattice)
+    for j = 1:lattice.ncol
+        for i = 1:lattice.nrow
+            lattice.div[i, j] = get_spin_div(lattice, i, j)
+        end
+    end
+end
+
+function get_spin_div(lattice::Lattice, i::Integer, j::Integer)
+    ncol = lattice.ncol
+    nrow = lattice.nrow
+    theta = lattice.theta
+    return 0.5 * (- sin(theta[i, j])
+               * (theta[i, mod1(j + 1, ncol)] - theta[i, mod1(j - 1, ncol)])
+               +  cos(theta[i, j])
+               * (theta[mod1(i + 1, nrow), j] - theta[mod1(i - 1, nrow), j]))
+end
+
+function update_spin_div!(lattice::Lattice, i::Integer, j::Integer)
+    ncol = lattice.ncol
+    nrow = lattice.nrow
+    lattice.div[mod1(i + 1, nrow), j] = get_spin_div(lattice, mod1(i + 1, nrow), j)
+    lattice.div[i, mod1(j + 1, ncol)] = get_spin_div(lattice, i, mod1(j + 1, ncol))
+    lattice.div[mod1(i - 1, nrow), j] = get_spin_div(lattice, mod1(i - 1, nrow), j)
+    lattice.div[i, mod1(j - 1, ncol)] = get_spin_div(lattice, i, mod1(j - 1, ncol))
+    lattice.div[i, j] = get_spin_div(lattice, i, j)
+end
+
 function fill_random!(lattice::Lattice)
     lattice.theta = 2 * π * rand(Float64, lattice.nrow, lattice.ncol)
     lattice.energy = get_energy(lattice)
@@ -77,10 +108,6 @@ function set!(lattice::Lattice, i::Integer, j::Integer, new_theta::Number)
     ΔE = get_ΔE(lattice, i, j, new_theta)
     lattice.theta[i, j] = mod(new_theta, 2 * π)
     lattice.energy += ΔE
-end
-
-function add!(lattice::Lattice, i::Integer, j::Integer, Δ_theta::Number)
-    set!(lattice, i, j, lattice.theta[i, j] + Δ_theta)
 end
 
 end
