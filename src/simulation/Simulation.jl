@@ -29,21 +29,19 @@ function start_simulation(lp::LatticeParams, sp::SimulationParams, consts::Const
     vis_obs, fig = create_visualization(lattice.theta)
     simdata = SimulationData(lattice, sp, consts, 0)
 
-    # for t = 1:sp.max_timesteps
-    #     update!(simdata)
-    #     if simdata.timestep % sp.vis_timesteps == 0
-    #         draw(vis_obs)
-    #     end
-    # end
-
-    print("T_$(lp.T), timesteps_$(sp.max_timesteps ÷ 1e3)k.mp4")
-
-    record(fig, "T_$(lp.T), timesteps_$(sp.max_timesteps ÷ 1e3)k.mp4", range(1, sp.max_timesteps / sp.vis_timesteps), framerate=15, compression=1) do t
-        for i = 1:sp.vis_timesteps
-            update!(simdata)
+    for t = 1:sp.max_timesteps
+        update!(simdata)
+        if simdata.timestep % sp.vis_timesteps == 0
+            draw(vis_obs)
         end
-        draw(vis_obs)
     end
+
+    #record(fig, "T_$(lp.T), timesteps_$(sp.max_timesteps ÷ 1e3)k.mp4", range(1, sp.max_timesteps / #sp.vis_timesteps), framerate=15, compression=1) do t
+    #    for i = 1:sp.vis_timesteps
+    #        update!(simdata)
+    #    end
+    #    draw(vis_obs)
+    #end
 end
 
 """

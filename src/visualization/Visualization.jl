@@ -16,7 +16,7 @@ struct GuiObservables
 end
 
 function create_visualization(theta::Array{AbstractFloat})
-    fig = Figure(); display(fig)
+    fig = Figure(resolution = (1500, 1000), fontsize=25); display(fig)
     ax = Axis(fig[1, 1])
     plot_obs = PlotObservables(theta)
 
@@ -26,7 +26,7 @@ function create_visualization(theta::Array{AbstractFloat})
     ylims!(ax, 0.5, height - 0.5)
     ax.aspect = AxisAspect(width / height)
     hm = GLMakie.heatmap!(plot_obs.theta[], colormap = :romaO, colorrange = (0, 2*π))
-    Colorbar(fig[1, 2], hm, ticks = MultiplesTicks(4, π, "π"))
+    Colorbar(fig[1, 2], hm, ticks = MultiplesTicks(4, π, "π"), size=40)
     return plot_obs, fig
 end
 
@@ -37,7 +37,9 @@ function draw(plot_obs::PlotObservables)
                     cos.(plot_obs.theta[]),
                     sin.(plot_obs.theta[]),
                     lengthscale = 0.8,
-                    align = :center)
+                    align = :center,
+                    linewidth=3,
+                    arrowsize=20)
 end
 
 
